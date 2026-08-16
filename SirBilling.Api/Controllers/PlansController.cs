@@ -18,7 +18,15 @@ public class PlansController : ControllerBase
     {
         var plans = await _db.Plans.AsNoTracking().ToListAsync();
 
-        return Ok(plans);
+        var plansResponse = plans.Select(x => new PlanResponseDto
+        {
+            Id = x.Id,
+            Name = x.Name,
+            Price = x.Price,
+            IsActive = x.IsActive
+        }).ToList();
+
+        return Ok(plansResponse);
     }
 
     [HttpGet("{id:guid}")]
@@ -34,7 +42,15 @@ public class PlansController : ControllerBase
             });
         }
 
-        return Ok(plan);
+        var planResponse = new PlanResponseDto
+        {
+            Id = plan.Id,
+            Name = plan.Name,
+            Price = plan.Price,
+            IsActive = plan.IsActive
+        };
+
+        return Ok(planResponse);
     }
 
     [HttpPost]
@@ -59,10 +75,18 @@ public class PlansController : ControllerBase
         _db.Plans.Add(plan);
         await _db.SaveChangesAsync();
 
+        var planResponse = new PlanResponseDto
+        {
+            Id = plan.Id,
+            Name = plan.Name,
+            Price = plan.Price,
+            IsActive = plan.IsActive
+        };
+
         return CreatedAtAction(
             nameof(GetById),
             new { id = plan.Id },
-            plan
+            planResponse
         );
     }
 
@@ -107,9 +131,17 @@ public class PlansController : ControllerBase
             plan.IsActive = data.IsActive.Value;
         }
 
+        var planResponse = new PlanResponseDto
+        {
+            Id = plan.Id,
+            Name = plan.Name,
+            Price = plan.Price,
+            IsActive = plan.IsActive
+        };
+
         await _db.SaveChangesAsync();
 
-        return Ok(plan);
+        return Ok(planResponse);
     }
 
     [HttpDelete("{id:guid}")]
