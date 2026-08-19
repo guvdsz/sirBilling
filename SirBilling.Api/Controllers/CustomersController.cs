@@ -19,7 +19,14 @@ public class CustomersController : ControllerBase
     {
         var customers = await _db.Customers.AsNoTracking().ToListAsync();
 
-        return Ok(customers);
+        var response = customers.Select(customer => new CustomerResponseDto
+        {
+            Id = customer.Id,
+            Name = customer.Name,
+            Email = customer.Email
+        });
+
+        return Ok(response);
     }
 
     [HttpGet("{id:guid}")]
@@ -67,10 +74,17 @@ public class CustomersController : ControllerBase
         _db.Customers.Add(customer);
         await _db.SaveChangesAsync();
 
+        var response = new CustomerResponseDto
+        {
+            Id = customer.Id,
+            Name = customer.Name,
+            Email = customer.Email
+        };
+
         return CreatedAtAction(
             nameof(GetById),
             new { id = customer.Id },
-            customer
+            response
         );
     }
 
@@ -114,9 +128,16 @@ public class CustomersController : ControllerBase
             customer.Email = data.Email;
         }
 
+        var response = new CustomerResponseDto
+        {
+            Id = customer.Id,
+            Name = customer.Name,
+            Email = customer.Email
+        };
+
         await _db.SaveChangesAsync();
 
-        return Ok(customer);
+        return Ok(response);
     }
 
     [HttpDelete("{id:guid}")]
