@@ -98,8 +98,6 @@ public class InvoiceController : ControllerBase
             Status = invoice.Status
         };
 
-
-
         return CreatedAtAction(
             nameof(GetById),
             new { id = invoice.Id },

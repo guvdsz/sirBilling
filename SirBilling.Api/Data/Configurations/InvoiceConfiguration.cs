@@ -11,6 +11,7 @@ public class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
             .IsRequired();
 
         builder.Property(x => x.Amount)
+            .HasPrecision(10, 2)
             .IsRequired();
 
         builder.Property(x => x.DueDate)
