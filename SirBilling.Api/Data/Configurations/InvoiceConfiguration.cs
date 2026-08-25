@@ -20,6 +20,9 @@ public class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
         builder.Property(x => x.Status)
             .IsRequired();
 
+        builder.Property(x => x.CreatedAt)
+            .IsRequired();
+
         builder.HasOne(x => x.Subscription)
             .WithMany(x => x.Invoices)
             .HasForeignKey(x => x.SubscriptionId);

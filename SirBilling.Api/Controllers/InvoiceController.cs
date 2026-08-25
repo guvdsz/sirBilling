@@ -25,7 +25,8 @@ public class InvoiceController : ControllerBase
             SubscriptionId = invoice.SubscriptionId,
             Amount = invoice.Amount,
             DueDate = invoice.DueDate,
-            Status = invoice.Status
+            Status = invoice.Status,
+            CreatedAt = invoice.CreatedAt
         });
 
 
@@ -51,7 +52,8 @@ public class InvoiceController : ControllerBase
             SubscriptionId = invoice.SubscriptionId,
             Amount = invoice.Amount,
             DueDate = invoice.DueDate,
-            Status = invoice.Status
+            Status = invoice.Status,
+            CreatedAt = invoice.CreatedAt
         };
 
         return Ok(response);
@@ -70,7 +72,15 @@ public class InvoiceController : ControllerBase
             });
         }
 
-        if (data.DueDate < DateTime.UtcNow)
+        if (subscription.Status != SubscriptionStatus.Active)
+        {
+            return BadRequest(new
+            {
+                message = "Cannot create invoice for inactive subscription."
+            });
+        }
+
+        if (data.DueDate < DateOnly.FromDateTime(DateTime.UtcNow))
         {
             return BadRequest(new
             {
@@ -95,6 +105,7 @@ public class InvoiceController : ControllerBase
             SubscriptionId = invoice.SubscriptionId,
             Amount = invoice.Amount,
             DueDate = invoice.DueDate,
+            CreatedAt = invoice.CreatedAt,
             Status = invoice.Status
         };
 
@@ -105,8 +116,8 @@ public class InvoiceController : ControllerBase
         );
     }
 
-    [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Delete(Guid id)
+    [HttpPost("{id:guid}/cancel")]
+    public async Task<IActionResult> Cancel(Guid id)
     {
         var invoice = await _db.Invoices.FirstOrDefaultAsync(x => x.Id == id);
 
