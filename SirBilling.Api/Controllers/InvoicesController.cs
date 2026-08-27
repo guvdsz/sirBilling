@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,7 +25,8 @@ public class InvoiceController : ControllerBase
             Amount = invoice.Amount,
             DueDate = invoice.DueDate,
             Status = invoice.Status,
-            CreatedAt = invoice.CreatedAt
+            CreatedAt = invoice.CreatedAt,
+            CanceledAt = invoice.CanceledAt
         });
 
 
@@ -53,7 +53,8 @@ public class InvoiceController : ControllerBase
             Amount = invoice.Amount,
             DueDate = invoice.DueDate,
             Status = invoice.Status,
-            CreatedAt = invoice.CreatedAt
+            CreatedAt = invoice.CreatedAt,
+            CanceledAt = invoice.CanceledAt
         };
 
         return Ok(response);
@@ -74,13 +75,13 @@ public class InvoiceController : ControllerBase
 
         if (subscription.Status != SubscriptionStatus.Active)
         {
-            return BadRequest(new
+            return Conflict(new
             {
                 message = "Cannot create invoice for inactive subscription."
             });
         }
 
-        if (data.DueDate < DateOnly.FromDateTime(DateTime.UtcNow))
+        if (data.DueDate <= DateOnly.FromDateTime(DateTime.UtcNow))
         {
             return BadRequest(new
             {
@@ -129,7 +130,24 @@ public class InvoiceController : ControllerBase
             });
         }
 
+        if (invoice.Status == InvoiceStatus.Paid)
+        {
+            return Conflict(new
+            {
+                message = "Cannot cancel a paid invoice."
+            });
+        }
+
+        if (invoice.Status == InvoiceStatus.Canceled)
+        {
+            return Conflict(new
+            {
+                message = "Invoice is already canceled."
+            });
+        }
+
         invoice.Status = InvoiceStatus.Canceled;
+        invoice.CanceledAt = DateTime.UtcNow;
 
         await _db.SaveChangesAsync();
 

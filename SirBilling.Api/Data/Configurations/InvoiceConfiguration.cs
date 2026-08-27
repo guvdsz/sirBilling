@@ -25,6 +25,7 @@ public class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
 
         builder.HasOne(x => x.Subscription)
             .WithMany(x => x.Invoices)
-            .HasForeignKey(x => x.SubscriptionId);
+            .HasForeignKey(x => x.SubscriptionId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

@@ -7,4 +7,5 @@ public class Plan
     public ICollection<Subscription> Subscriptions { get; set; }
         = new List<Subscription>();
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? DeletedAt { get; set; }
 }

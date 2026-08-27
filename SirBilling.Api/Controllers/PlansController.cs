@@ -147,7 +147,7 @@ public class PlansController : ControllerBase
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var plan = await _db.Plans.FirstOrDefaultAsync(x => x.Id == id);
+        var plan = await _db.Plans.Include(x => x.Subscriptions).FirstOrDefaultAsync(x => x.Id == id);
 
         if (plan == null)
         {
@@ -157,7 +157,16 @@ public class PlansController : ControllerBase
             });
         }
 
-        _db.Plans.Remove(plan);
+        if (plan.Subscriptions.Any(x => x.Status == SubscriptionStatus.Active))
+        {
+            return Conflict(new
+            {
+                message = "Cannot delete a plan with active subscriptions."
+            });
+        }
+
+        plan.IsActive = false;
+        plan.DeletedAt = DateTime.UtcNow;
 
         await _db.SaveChangesAsync();
 

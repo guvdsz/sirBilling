@@ -116,8 +116,8 @@ public class SubscriptionsController : ControllerBase
         );
     }
 
-    [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Delete(Guid id)
+    [HttpPost("{id:guid}/cancel")]
+    public async Task<IActionResult> Cancel(Guid id)
     {
         var subscription = await _db.Subscriptions.FirstOrDefaultAsync(x => x.Id == id);
 
@@ -126,6 +126,14 @@ public class SubscriptionsController : ControllerBase
             return NotFound(new
             {
                 message = "Subscription not found."
+            });
+        }
+
+        if (subscription.Status != SubscriptionStatus.Active)
+        {
+            return Conflict(new
+            {
+                message = "Only active subscriptions can be canceled."
             });
         }
 

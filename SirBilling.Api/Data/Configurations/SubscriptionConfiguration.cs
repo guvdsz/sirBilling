@@ -17,10 +17,12 @@ public class SubscriptionConfiguration : IEntityTypeConfiguration<Subscription>
 
         builder.HasOne(x => x.Customer)
             .WithMany(x => x.Subscriptions)
-            .HasForeignKey(x => x.CustomerId);
+            .HasForeignKey(x => x.CustomerId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(x => x.Plan)
             .WithMany(x => x.Subscriptions)
-            .HasForeignKey(x => x.PlanId);
+            .HasForeignKey(x => x.PlanId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
