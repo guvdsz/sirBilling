@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using SirBilling.Api.Controllers;
 
@@ -11,18 +10,8 @@ public class PaymentsControllerTests
     public async Task Create_WhenInvoiceIsPending_CreatesPaymentAndMarksInvoiceAsPaid()
     {
         // Arrange
-        await using var connection =
-            new SqliteConnection("Data Source=:memory:");
-
-        await connection.OpenAsync();
-
-        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseSqlite(connection)
-            .Options;
-
-        await using var db = new ApplicationDbContext(options);
-
-        await db.Database.EnsureCreatedAsync();
+        await using var database = await TestDatabase.CreateAsync();
+        var db = database.Context;
 
         var invoice = new Invoice
         {
@@ -88,18 +77,8 @@ public class PaymentsControllerTests
     public async Task Create_WhenInvoiceDoesNotExist_ReturnsNotFound()
     {
         // Arrange
-        await using var connection =
-            new SqliteConnection("Data Source=:memory:");
-
-        await connection.OpenAsync();
-
-        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseSqlite(connection)
-            .Options;
-
-        await using var db = new ApplicationDbContext(options);
-
-        await db.Database.EnsureCreatedAsync();
+        await using var database = await TestDatabase.CreateAsync();
+        var db = database.Context;
 
         var controller = new PaymentsController(db);
 
@@ -125,18 +104,8 @@ public class PaymentsControllerTests
     public async Task Create_WhenInvoiceIsCanceled_ReturnsConflict()
     {
         // Arrange
-        await using var connection =
-            new SqliteConnection("Data Source=:memory:");
-
-        await connection.OpenAsync();
-
-        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseSqlite(connection)
-            .Options;
-
-        await using var db = new ApplicationDbContext(options);
-
-        await db.Database.EnsureCreatedAsync();
+        await using var database = await TestDatabase.CreateAsync();
+        var db = database.Context;
 
         var controller = new PaymentsController(db);
 
@@ -187,18 +156,8 @@ public class PaymentsControllerTests
     public async Task Create_WhenInvoiceIsAlreadyPaid_ReturnsConflict()
     {
         // Arrange
-        await using var connection =
-            new SqliteConnection("Data Source=:memory:");
-
-        await connection.OpenAsync();
-
-        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseSqlite(connection)
-            .Options;
-
-        await using var db = new ApplicationDbContext(options);
-
-        await db.Database.EnsureCreatedAsync();
+        await using var database = await TestDatabase.CreateAsync();
+        var db = database.Context;
 
         var controller = new PaymentsController(db);
 
@@ -257,18 +216,8 @@ public class PaymentsControllerTests
     public async Task Create_WhenInvoiceIsOverdue_CreatesPayment()
     {
         // Arrange
-        await using var connection =
-            new SqliteConnection("Data Source=:memory:");
-
-        await connection.OpenAsync();
-
-        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseSqlite(connection)
-            .Options;
-
-        await using var db = new ApplicationDbContext(options);
-
-        await db.Database.EnsureCreatedAsync();
+        await using var database = await TestDatabase.CreateAsync();
+        var db = database.Context;
 
         var controller = new PaymentsController(db);
 
