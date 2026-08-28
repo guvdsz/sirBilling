@@ -34,30 +34,30 @@ Customers subscribe to active plans. Invoices are generated from the current pla
 
 ## API endpoints
 
-| Method | Route | Description |
-| --- | --- | --- |
-| `GET` | `/api/health` | Returns the API health status. |
-| `GET` | `/api/customers` | Lists customers. |
-| `GET` | `/api/customers/{id}` | Gets a customer by ID. |
-| `POST` | `/api/customers` | Creates a customer. |
-| `PATCH` | `/api/customers/{id}` | Partially updates a customer. |
-| `DELETE` | `/api/customers/{id}` | Soft-deletes a customer. |
-| `GET` | `/api/plans` | Lists plans. |
-| `GET` | `/api/plans/{id}` | Gets a plan by ID. |
-| `POST` | `/api/plans` | Creates a plan. |
-| `PATCH` | `/api/plans/{id}` | Partially updates a plan. |
-| `DELETE` | `/api/plans/{id}` | Deactivates and soft-deletes a plan. |
-| `GET` | `/api/subscriptions` | Lists subscriptions. |
-| `GET` | `/api/subscriptions/{id}` | Gets a subscription by ID. |
-| `POST` | `/api/subscriptions` | Creates a subscription. |
-| `POST` | `/api/subscriptions/{id}/cancel` | Cancels an active subscription. |
-| `GET` | `/api/invoices` | Lists invoices. |
-| `GET` | `/api/invoices/{id}` | Gets an invoice by ID. |
-| `POST` | `/api/invoices` | Creates an invoice for an active subscription. |
-| `POST` | `/api/invoices/{id}/cancel` | Cancels an unpaid invoice. |
-| `GET` | `/api/payments` | Lists payments. |
-| `GET` | `/api/payments/{id}` | Gets a payment by ID. |
-| `POST` | `/api/payments` | Creates a payment and marks the invoice as paid. |
+| Method   | Route                            | Description                                      |
+| -------- | -------------------------------- | ------------------------------------------------ |
+| `GET`    | `/api/health`                    | Returns the API health status.                   |
+| `GET`    | `/api/customers`                 | Lists customers.                                 |
+| `GET`    | `/api/customers/{id}`            | Gets a customer by ID.                           |
+| `POST`   | `/api/customers`                 | Creates a customer.                              |
+| `PATCH`  | `/api/customers/{id}`            | Partially updates a customer.                    |
+| `DELETE` | `/api/customers/{id}`            | Soft-deletes a customer.                         |
+| `GET`    | `/api/plans`                     | Lists plans.                                     |
+| `GET`    | `/api/plans/{id}`                | Gets a plan by ID.                               |
+| `POST`   | `/api/plans`                     | Creates a plan.                                  |
+| `PATCH`  | `/api/plans/{id}`                | Partially updates a plan.                        |
+| `DELETE` | `/api/plans/{id}`                | Deactivates and soft-deletes a plan.             |
+| `GET`    | `/api/subscriptions`             | Lists subscriptions.                             |
+| `GET`    | `/api/subscriptions/{id}`        | Gets a subscription by ID.                       |
+| `POST`   | `/api/subscriptions`             | Creates a subscription.                          |
+| `POST`   | `/api/subscriptions/{id}/cancel` | Cancels an active subscription.                  |
+| `GET`    | `/api/invoices`                  | Lists invoices.                                  |
+| `GET`    | `/api/invoices/{id}`             | Gets an invoice by ID.                           |
+| `POST`   | `/api/invoices`                  | Creates an invoice for an active subscription.   |
+| `POST`   | `/api/invoices/{id}/cancel`      | Cancels an unpaid invoice.                       |
+| `GET`    | `/api/payments`                  | Lists payments.                                  |
+| `GET`    | `/api/payments/{id}`             | Gets a payment by ID.                            |
+| `POST`   | `/api/payments`                  | Creates a payment and marks the invoice as paid. |
 
 ## Running locally
 
