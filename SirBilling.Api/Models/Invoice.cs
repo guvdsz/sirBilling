@@ -8,4 +8,5 @@ public class Invoice
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? CanceledAt { get; set; }
     public Subscription Subscription { get; set; } = null!;
+    public Payment? Payment { get; set; } = null!;
 }

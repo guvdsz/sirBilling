@@ -143,7 +143,7 @@ public class CustomersController : ControllerBase
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var customer = await _db.Customers.Include(x => x.Subscriptions).FirstOrDefaultAsync(x => x.Id == id);
+        var customer = await _db.Customers.FirstOrDefaultAsync(x => x.Id == id);
 
         if (customer == null)
         {
@@ -158,7 +158,7 @@ public class CustomersController : ControllerBase
 
         if (hasActiveSubscriptions)
         {
-            return BadRequest(new
+            return Conflict(new
             {
                 message = "The customer has active subscriptions and cannot be deleted."
             });
