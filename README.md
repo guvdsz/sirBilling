@@ -87,7 +87,7 @@ Start the API with:
 dotnet run --project SirBilling.Api/SirBilling.Api.csproj
 ```
 
-In Development, the OpenAPI document is available through the ASP.NET Core OpenAPI endpoint. HTTPS redirection is enabled by default; use the URL printed by `dotnet run`.
+In Development, the OpenAPI document is available at `/openapi/v1.json`. HTTPS redirection is enabled by default; use the URL printed by `dotnet run`.
 
 ## Tests
 
