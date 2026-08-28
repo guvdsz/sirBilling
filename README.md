@@ -76,9 +76,7 @@ The development connection string is in `SirBilling.Api/appsettings.json`. Updat
 Apply the existing migrations from the repository root:
 
 ```bash
-dotnet ef database update \
-	--project SirBilling.Api/SirBilling.Api.csproj \
-	--startup-project SirBilling.Api/SirBilling.Api.csproj
+dotnet ef database update --project SirBilling.Api/SirBilling.Api.csproj --startup-project SirBilling.Api/SirBilling.Api.csproj
 ```
 
 Start the API with:
@@ -97,7 +95,7 @@ Run all tests from the repository root:
 dotnet test SirBilling.slnx
 ```
 
-The test project uses SQLite in-memory databases and calls controllers directly. The suite covers successful and invalid requests, not-found and conflict responses, soft deletion, subscription lifecycle transitions, invoice lifecycle rules, payment creation and invoice status changes.
+The test suite combines controller tests backed by SQLite in-memory databases with HTTP integration tests powered by `WebApplicationFactory` and `HttpClient`. It covers successful and invalid requests, not-found and conflict responses, soft deletion, subscription lifecycle transitions, invoice lifecycle rules, payment creation and invoice status changes.
 
 ## Continuous integration
 
@@ -111,4 +109,4 @@ Changes should be merged into `main` through a pull request after the checks pas
 - Docker and containerized local development
 - Pagination and filtering for collection endpoints
 - Structured logging, metrics and distributed tracing
-- Integration tests for the HTTP pipeline
+- PostgreSQL integration tests with Testcontainers
