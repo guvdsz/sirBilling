@@ -11,6 +11,6 @@ public class HealthController : ControllerBase
     {
         var response = new { healthy = true };
 
-        return Created("", response);
+        return Ok(response);
     }
 }
