@@ -1,5 +1,5 @@
 public class CreatePlanDto
 {
-    public string Name { get; set; } = string.Empty;
+    public required string Name { get; set; }
     public decimal Price { get; set; }
 }
