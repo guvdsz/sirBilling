@@ -52,17 +52,63 @@ public class CustomersControllerTests
     }
 
     [Fact]
-    public async Task Create_WhenNameOrEmailIsInvalid_ReturnsBadRequest()
+    public async Task Create_WhenEmailBelongsToDeletedCustomer_ReturnsConflict()
+    {
+        await using var database = await TestDatabase.CreateAsync();
+
+        database.Context.Customers.Add(new Customer
+        {
+            Name = "Ana Almeida",
+            Email = "a@example.com",
+            DeletedAt = DateTime.UtcNow
+        });
+
+        await database.Context.SaveChangesAsync();
+
+        var controller = new CustomersController(database.Context);
+
+        var result = await controller.Create(new CreateCustomerDto
+        {
+            Name = "Outra Ana",
+            Email = "A@EXAMPLE.COM"
+        });
+
+        Assert.IsType<ConflictObjectResult>(result);
+
+        var customerCount = await database.Context.Customers
+            .IgnoreQueryFilters()
+            .CountAsync();
+
+        Assert.Equal(1, customerCount);
+    }
+
+    [Theory]
+    [InlineData("a@example.com", "a@example.com")]
+    [InlineData("a@example.com", "A@EXAMPLE.COM")]
+    [InlineData("A@EXAMPLE.COM", "a@example.com")]
+    public async Task Create_WhenEmailExists_ReturnsConflict(string firstEmail, string duplicatedEmail)
     {
         await using var database = await TestDatabase.CreateAsync();
         var controller = new CustomersController(database.Context);
 
-        var shortName = await controller.Create(new CreateCustomerDto { Name = "A", Email = "a@example.com" });
-        var invalidEmail = await controller.Create(new CreateCustomerDto { Name = "Ana", Email = "invalid" });
+        var firstResult = await controller.Create(new CreateCustomerDto
+        {
+            Name = "Ana Almeida",
+            Email = firstEmail
+        });
 
-        Assert.IsType<BadRequestObjectResult>(shortName);
-        Assert.IsType<BadRequestObjectResult>(invalidEmail);
-        Assert.Empty(await database.Context.Customers.ToListAsync());
+        var duplicatedResult = await controller.Create(new CreateCustomerDto
+        {
+            Name = "Ana Xavier",
+            Email = duplicatedEmail
+        });
+
+        Assert.IsType<CreatedAtActionResult>(firstResult);
+        Assert.IsType<ConflictObjectResult>(duplicatedResult);
+
+        var savedCustomer = await database.Context.Customers.SingleAsync();
+
+        Assert.Equal("a@example.com", savedCustomer.Email);
     }
 
     [Fact]

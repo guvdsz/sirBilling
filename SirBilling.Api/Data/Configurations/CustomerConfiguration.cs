@@ -8,6 +8,9 @@ public class CustomerConfiguration : IEntityTypeConfiguration<Customer>
         builder.HasQueryFilter(x => x.DeletedAt == null);
         builder.HasKey(x => x.Id);
 
+        builder.HasIndex(x => x.Email)
+        .IsUnique();
+
         builder.Property(x => x.Name)
             .IsRequired()
             .HasMaxLength(100);

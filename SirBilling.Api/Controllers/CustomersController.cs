@@ -55,20 +55,22 @@ public class CustomersController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(CreateCustomerDto data)
     {
-        if (string.IsNullOrWhiteSpace(data.Name) || data.Name.Length < 3)
-        {
-            return BadRequest(new { message = "The name must have at least 3 characters" });
-        }
+        var normalizedEmail = data.Email.ToLowerInvariant();
 
-        if (data.Email is null || !data.Email.Contains("@"))
+        var emailExists = await _db.Customers.IgnoreQueryFilters().AnyAsync(x => x.Email == normalizedEmail);
+
+        if (emailExists)
         {
-            return BadRequest(new { message = "The email is not valid" });
+            return Conflict(new
+            {
+                message = "The e-mail inserted is already in use. Please check."
+            });
         }
 
         var customer = new Customer
         {
             Name = data.Name,
-            Email = data.Email
+            Email = normalizedEmail
         };
 
         _db.Customers.Add(customer);
@@ -103,29 +105,23 @@ public class CustomersController : ControllerBase
 
         if (data.Name is not null)
         {
-            if (string.IsNullOrWhiteSpace(data.Name) || data.Name.Length < 3)
-            {
-                return BadRequest(new
-                {
-                    message = "The name must have at least 3 characters"
-                });
-            }
             customer.Name = data.Name;
         }
 
         if (data.Email is not null)
         {
-            var emailChecker = new EmailAddressAttribute();
+            var normalizedEmail = data.Email.ToLowerInvariant();
+            var emailExists = await _db.Customers.IgnoreQueryFilters().AnyAsync(x => x.Email == normalizedEmail && x.Id != id);
 
-            if (!emailChecker.IsValid(data.Email))
+            if (emailExists)
             {
-                return BadRequest(new
+                return Conflict(new
                 {
-                    message = "The e-mail inserted is invalid. Please check."
+                    message = "The e-mail inserted is already in use. Please check."
                 });
             }
 
-            customer.Email = data.Email;
+            customer.Email = normalizedEmail;
         }
 
         var response = new CustomerResponseDto
