@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace SirBilling.Api.Tests;
@@ -64,6 +65,194 @@ public class CustomersEndpointTests :
         Assert.NotNull(problem);
         Assert.Single(problem.Errors);
         Assert.Contains(expectedField, problem.Errors.Keys);
+    }
+
+    [Fact]
+    public async Task Create_WhenEmailAlreadyExists_ReturnsProblemDetails()
+    {
+        await _factory.ResetDatabaseAsync();
+
+        var firstResponse = await _client.PostAsJsonAsync(
+            "/api/customers",
+            new CreateCustomerDto
+            {
+                Name = "Ana Almeida",
+                Email = "a@example.com"
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.Created, firstResponse.StatusCode);
+
+        var duplicatedResponse = await _client.PostAsJsonAsync(
+            "/api/customers",
+            new CreateCustomerDto
+            {
+                Name = "Outra Ana",
+                Email = "A@EXAMPLE.COM"
+            }
+        );
+
+        Assert.Equal(
+            HttpStatusCode.Conflict,
+            duplicatedResponse.StatusCode
+        );
+
+        Assert.Equal(
+            "application/problem+json",
+            duplicatedResponse.Content.Headers.ContentType?.MediaType
+        );
+
+        var problem = await duplicatedResponse.Content
+            .ReadFromJsonAsync<ProblemDetails>();
+
+        Assert.NotNull(problem);
+        Assert.Equal(StatusCodes.Status409Conflict, problem.Status);
+        Assert.Equal("Email already in use", problem.Title);
+    }
+
+    [Fact]
+    public async Task Update_WhenEmailAlreadyExists_ReturnsProblemDetails()
+    {
+        await _factory.ResetDatabaseAsync();
+
+        var firstResponse = await _client.PostAsJsonAsync(
+            "/api/customers",
+            new CreateCustomerDto
+            {
+                Name = "Ana",
+                Email = "ana@example.com"
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.Created, firstResponse.StatusCode);
+
+        var firstCustomer = await firstResponse.Content
+            .ReadFromJsonAsync<CustomerResponseDto>();
+
+        Assert.NotNull(firstCustomer);
+
+        var secondResponse = await _client.PostAsJsonAsync(
+            "/api/customers",
+            new CreateCustomerDto
+            {
+                Name = "Maria",
+                Email = "maria@example.com"
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.Created, secondResponse.StatusCode);
+
+        var updateResponse = await _client.PatchAsJsonAsync(
+            $"/api/customers/{firstCustomer.Id}",
+            new UpdateCustomerDto
+            {
+                Email = "MARIA@EXAMPLE.COM"
+            }
+        );
+
+        Assert.Equal(
+            HttpStatusCode.Conflict,
+            updateResponse.StatusCode
+        );
+
+        Assert.Equal(
+            "application/problem+json",
+            updateResponse.Content.Headers.ContentType?.MediaType
+        );
+
+        var problem = await updateResponse.Content
+            .ReadFromJsonAsync<ProblemDetails>();
+
+        Assert.NotNull(problem);
+        Assert.Equal(StatusCodes.Status409Conflict, problem.Status);
+        Assert.Equal("Email already in use", problem.Title);
+
+        var getResponse = await _client.GetAsync(
+            $"/api/customers/{firstCustomer.Id}"
+        );
+
+        Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
+
+        var unchangedCustomer = await getResponse.Content.ReadFromJsonAsync<CustomerResponseDto>();
+
+        Assert.NotNull(unchangedCustomer);
+        Assert.Equal("ana@example.com", unchangedCustomer.Email);
+    }
+
+    [Fact]
+    public async Task Delete_WhenCustomerDoesNotExist_ReturnsProblemDetails()
+    {
+        await _factory.ResetDatabaseAsync();
+
+        var response = await _client.DeleteAsync(
+            $"/api/customers/{Guid.NewGuid()}"
+        );
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+
+        Assert.Equal(
+            "application/problem+json",
+            response.Content.Headers.ContentType?.MediaType
+        );
+
+        var problem = await response.Content
+            .ReadFromJsonAsync<ProblemDetails>();
+
+        Assert.NotNull(problem);
+        Assert.Equal(StatusCodes.Status404NotFound, problem.Status);
+        Assert.Equal("Customer not found", problem.Title);
+    }
+
+    [Fact]
+    public async Task Update_WhenCustomerDoesNotExist_ReturnsProblemDetails()
+    {
+        await _factory.ResetDatabaseAsync();
+
+        var response = await _client.PatchAsJsonAsync(
+            $"/api/customers/{Guid.NewGuid()}",
+            new UpdateCustomerDto
+            {
+                Name = "Ana Silva"
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+
+        Assert.Equal(
+            "application/problem+json",
+            response.Content.Headers.ContentType?.MediaType
+        );
+
+        var problem = await response.Content
+            .ReadFromJsonAsync<ProblemDetails>();
+
+        Assert.NotNull(problem);
+        Assert.Equal(StatusCodes.Status404NotFound, problem.Status);
+        Assert.Equal("Customer not found", problem.Title);
+    }
+
+    [Fact]
+    public async Task GetById_WhenCustomerDoesNotExist_ReturnsProblemDetails()
+    {
+        await _factory.ResetDatabaseAsync();
+
+        var response = await _client.GetAsync(
+            $"/api/customers/{Guid.NewGuid()}"
+        );
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+
+        Assert.Equal(
+            "application/problem+json",
+            response.Content.Headers.ContentType?.MediaType
+        );
+
+        var problem = await response.Content
+            .ReadFromJsonAsync<ProblemDetails>();
+
+        Assert.NotNull(problem);
+        Assert.Equal(StatusCodes.Status404NotFound, problem.Status);
+        Assert.Equal("Customer not found", problem.Title);
     }
 
 

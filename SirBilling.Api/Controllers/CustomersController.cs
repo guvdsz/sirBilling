@@ -36,10 +36,7 @@ public class CustomersController : ControllerBase
 
         if (customer == null)
         {
-            return NotFound(new
-            {
-                message = "Customer not found."
-            });
+            return CustomerNotFoundProblem();
         }
 
         var response = new CustomerResponseDto
@@ -61,10 +58,12 @@ public class CustomersController : ControllerBase
 
         if (emailExists)
         {
-            return Conflict(new
-            {
-                message = "The e-mail inserted is already in use. Please check."
-            });
+
+            return Problem(
+                statusCode: StatusCodes.Status409Conflict,
+                title: "Email already in use",
+                detail: "The e-mail inserted is already in use. Please check."
+            );
         }
 
         var customer = new Customer
@@ -97,10 +96,7 @@ public class CustomersController : ControllerBase
 
         if (customer == null)
         {
-            return NotFound(new
-            {
-                message = "Customer not found."
-            });
+            return CustomerNotFoundProblem();
         }
 
         if (data.Name is not null)
@@ -115,10 +111,11 @@ public class CustomersController : ControllerBase
 
             if (emailExists)
             {
-                return Conflict(new
-                {
-                    message = "The e-mail inserted is already in use. Please check."
-                });
+                return Problem(
+                    statusCode: StatusCodes.Status409Conflict,
+                    title: "Email already in use",
+                    detail: "The e-mail inserted is already in use. Please check."
+                );
             }
 
             customer.Email = normalizedEmail;
@@ -143,10 +140,7 @@ public class CustomersController : ControllerBase
 
         if (customer == null)
         {
-            return NotFound(new
-            {
-                message = "Customer not found."
-            });
+            return CustomerNotFoundProblem();
         }
 
         var hasActiveSubscriptions = await _db.Subscriptions
@@ -154,10 +148,11 @@ public class CustomersController : ControllerBase
 
         if (hasActiveSubscriptions)
         {
-            return Conflict(new
-            {
-                message = "The customer has active subscriptions and cannot be deleted."
-            });
+            return Problem(
+                statusCode: StatusCodes.Status409Conflict,
+                title: "Cannot delete customer with active subscriptions",
+                detail: "The customer has active subscriptions and cannot be deleted."
+            );
         }
 
         customer.DeletedAt = DateTime.UtcNow;
@@ -165,5 +160,14 @@ public class CustomersController : ControllerBase
         await _db.SaveChangesAsync();
 
         return NoContent();
+    }
+
+    private ObjectResult CustomerNotFoundProblem()
+    {
+        return Problem(
+            statusCode: StatusCodes.Status404NotFound,
+            title: "Customer not found",
+            detail: "No customer was found with the provided identifier."
+        );
     }
 }

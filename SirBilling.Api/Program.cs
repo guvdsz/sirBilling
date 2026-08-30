@@ -14,6 +14,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         builder.Configuration.GetConnectionString("DefaultConnection")
     )
       );
+builder.Services.AddProblemDetails();
 
 var app = builder.Build();
 
@@ -22,6 +23,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+app.UseStatusCodePages();
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SirBilling.Api.Controllers;
@@ -21,16 +22,6 @@ public class CustomersControllerTests
         var item = Assert.Single(response);
         Assert.Equal(customer.Id, item.Id);
         Assert.Equal("Ana Silva", item.Name);
-    }
-
-    [Fact]
-    public async Task GetById_WhenMissing_ReturnsNotFound()
-    {
-        await using var database = await TestDatabase.CreateAsync();
-
-        var result = await new CustomersController(database.Context).GetById(Guid.NewGuid());
-
-        Assert.IsType<NotFoundObjectResult>(result);
     }
 
     [Fact]
@@ -73,7 +64,16 @@ public class CustomersControllerTests
             Email = "A@EXAMPLE.COM"
         });
 
-        Assert.IsType<ConflictObjectResult>(result);
+        var conflict = Assert.IsType<ObjectResult>(result);
+
+        Assert.Equal(
+            StatusCodes.Status409Conflict,
+            conflict.StatusCode
+        );
+
+        var problem = Assert.IsType<ProblemDetails>(conflict.Value);
+
+        Assert.Equal("Email already in use", problem.Title);
 
         var customerCount = await database.Context.Customers
             .IgnoreQueryFilters()
@@ -104,7 +104,16 @@ public class CustomersControllerTests
         });
 
         Assert.IsType<CreatedAtActionResult>(firstResult);
-        Assert.IsType<ConflictObjectResult>(duplicatedResult);
+        var conflict = Assert.IsType<ObjectResult>(duplicatedResult);
+
+        Assert.Equal(
+            StatusCodes.Status409Conflict,
+            conflict.StatusCode
+        );
+
+        var problem = Assert.IsType<ProblemDetails>(conflict.Value);
+
+        Assert.Equal("Email already in use", problem.Title);
 
         var savedCustomer = await database.Context.Customers.SingleAsync();
 
@@ -143,7 +152,17 @@ public class CustomersControllerTests
 
         var result = await new CustomersController(database.Context).Delete(customer.Id);
 
-        Assert.IsType<ConflictObjectResult>(result);
+        var conflict = Assert.IsType<ObjectResult>(result);
+
+        var problem = Assert.IsType<ProblemDetails>(conflict.Value);
+
+        Assert.Equal("Cannot delete customer with active subscriptions", problem.Title);
+
+        Assert.Equal(
+            StatusCodes.Status409Conflict,
+            conflict.StatusCode
+        );
+
         database.Context.ChangeTracker.Clear();
         Assert.Null((await database.Context.Customers.SingleAsync()).DeletedAt);
     }
