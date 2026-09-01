@@ -146,8 +146,7 @@ public class InvoiceController : ControllerBase
             });
         }
 
-        invoice.Status = InvoiceStatus.Canceled;
-        invoice.CanceledAt = DateTime.UtcNow;
+        invoice.Cancel();
 
         await _db.SaveChangesAsync();
 

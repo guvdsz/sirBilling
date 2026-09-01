@@ -9,4 +9,29 @@ public class Invoice
     public DateTime? CanceledAt { get; set; }
     public Subscription Subscription { get; set; } = null!;
     public Payment? Payment { get; set; } = null!;
+
+    public void MarkAsPaid()
+    {
+        if (Status != InvoiceStatus.Pending && Status != InvoiceStatus.Overdue)
+        {
+            throw new InvalidOperationException(
+                "Only pending or overdue invoices can be paid."
+            );
+        }
+
+        Status = InvoiceStatus.Paid;
+    }
+
+    public void Cancel()
+    {
+        if (Status != InvoiceStatus.Pending && Status != InvoiceStatus.Overdue)
+        {
+            throw new InvalidOperationException(
+                "Only pending or overdue invoices can be canceled."
+            );
+        }
+
+        Status = InvoiceStatus.Canceled;
+        CanceledAt = DateTime.UtcNow;
+    }
 }

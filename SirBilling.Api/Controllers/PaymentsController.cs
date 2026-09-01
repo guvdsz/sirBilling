@@ -87,7 +87,7 @@ public class PaymentsController : ControllerBase
             Amount = invoice.Amount
         };
 
-        invoice.Status = InvoiceStatus.Paid;
+        invoice.MarkAsPaid();
 
         _db.Payments.Add(payment);
         await _db.SaveChangesAsync();
