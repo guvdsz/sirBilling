@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using SirBilling.Api.Controllers;
 
-namespace SirBilling.Api.Tests;
+namespace SirBilling.Api.Tests.PaymentTests;
 
 public class PaymentsControllerTests
 {
@@ -39,7 +39,8 @@ public class PaymentsControllerTests
         db.Invoices.Add(invoice);
         await db.SaveChangesAsync();
 
-        var controller = new PaymentsController(db);
+        var service = new PaymentService(db);
+        var controller = new PaymentsController(db, service);
 
         var request = new CreatePaymentDto
         {
@@ -80,7 +81,8 @@ public class PaymentsControllerTests
         await using var database = await TestDatabase.CreateAsync();
         var db = database.Context;
 
-        var controller = new PaymentsController(db);
+        var service = new PaymentService(db);
+        var controller = new PaymentsController(db, service);
 
         var request = new CreatePaymentDto
         {
@@ -107,7 +109,8 @@ public class PaymentsControllerTests
         await using var database = await TestDatabase.CreateAsync();
         var db = database.Context;
 
-        var controller = new PaymentsController(db);
+        var service = new PaymentService(db);
+        var controller = new PaymentsController(db, service);
 
         var invoice = new Invoice
         {
@@ -159,7 +162,8 @@ public class PaymentsControllerTests
         await using var database = await TestDatabase.CreateAsync();
         var db = database.Context;
 
-        var controller = new PaymentsController(db);
+        var service = new PaymentService(db);
+        var controller = new PaymentsController(db, service);
 
         var invoice = new Invoice
         {
@@ -219,7 +223,8 @@ public class PaymentsControllerTests
         await using var database = await TestDatabase.CreateAsync();
         var db = database.Context;
 
-        var controller = new PaymentsController(db);
+        var service = new PaymentService(db);
+        var controller = new PaymentsController(db, service);
 
         var invoice = new Invoice
         {
@@ -256,16 +261,13 @@ public class PaymentsControllerTests
 
         var result = await controller.Create(request);
 
-        var createdResult =
-            Assert.IsType<CreatedAtActionResult>(result);
+        var createdResult = Assert.IsType<CreatedAtActionResult>(result);
 
         db.ChangeTracker.Clear();
 
-        var savedInvoice = await db.Invoices
-            .SingleAsync(x => x.Id == invoice.Id);
+        var savedInvoice = await db.Invoices.SingleAsync(x => x.Id == invoice.Id);
 
-        var savedPayment = await db.Payments
-            .SingleAsync(x => x.InvoiceId == invoice.Id);
+        var savedPayment = await db.Payments.SingleAsync(x => x.InvoiceId == invoice.Id);
 
         Assert.Equal(InvoiceStatus.Paid, savedInvoice.Status);
         Assert.Equal(invoice.Amount, savedPayment.Amount);

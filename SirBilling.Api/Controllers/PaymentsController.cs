@@ -8,9 +8,14 @@ namespace SirBilling.Api.Controllers;
 public class PaymentsController : ControllerBase
 {
     private readonly ApplicationDbContext _db;
-    public PaymentsController(ApplicationDbContext db)
+    private readonly PaymentService _paymentService;
+
+    public PaymentsController(
+        ApplicationDbContext db,
+        PaymentService paymentService)
     {
         _db = db;
+        _paymentService = paymentService;
     }
 
     [HttpGet]
@@ -55,9 +60,9 @@ public class PaymentsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(CreatePaymentDto data)
     {
-        var invoice = await _db.Invoices.FirstOrDefaultAsync(x => x.Id == data.InvoiceId);
+        var result = await _paymentService.CreateAsync(data.InvoiceId);
 
-        if (invoice == null)
+        if (result.Status == CreatePaymentStatus.InvoiceNotFound)
         {
             return NotFound(new
             {
@@ -65,7 +70,7 @@ public class PaymentsController : ControllerBase
             });
         }
 
-        if (invoice.Status == InvoiceStatus.Paid)
+        if (result.Status == CreatePaymentStatus.InvoiceAlreadyPaid)
         {
             return Conflict(new
             {
@@ -73,7 +78,7 @@ public class PaymentsController : ControllerBase
             });
         }
 
-        if (invoice.Status == InvoiceStatus.Canceled)
+        if (result.Status == CreatePaymentStatus.InvoiceCanceled)
         {
             return Conflict(new
             {
@@ -81,16 +86,10 @@ public class PaymentsController : ControllerBase
             });
         }
 
-        var payment = new Payment
-        {
-            InvoiceId = data.InvoiceId,
-            Amount = invoice.Amount
-        };
-
-        invoice.MarkAsPaid();
-
-        _db.Payments.Add(payment);
-        await _db.SaveChangesAsync();
+        var payment = result.Payment
+        ?? throw new InvalidOperationException(
+            "A successful payment result must contain a payment."
+        );
 
         var response = new PaymentResponseDto
         {
@@ -102,7 +101,7 @@ public class PaymentsController : ControllerBase
 
         return CreatedAtAction(
             nameof(GetById),
-            new { id = payment.Id },
+            new { id = response.Id },
             response
         );
     }
